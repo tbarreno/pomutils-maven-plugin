@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>it.tests</groupId>
+  <artifactId>add-properties-from-file</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <description>Adds properties to the POM</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>add-properties-from-params</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>add-properties</goal>
+            </goals>
+            <configuration>
+              <pomFile>alternate-pom.xml</pomFile>
+              <properties>
+                <property>server.hostname=a1b2c3.example.com</property>
+                <property>server.port=8443</property>
+              </properties>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
