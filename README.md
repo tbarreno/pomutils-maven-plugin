@@ -39,7 +39,7 @@ The parameters for adding a dependency to the POM are the same from a
 This goal just adds a new dependency:
 
 ```bash
-$ mvn info.bluespot:pomutils-maven-plugin:1.0.0:add-dependency -DgroupId=com.example -DartifactId=my-library -Dversion=1.0.0 -Dscope=provided
+$ mvn info.bluespot:pomutils-maven-plugin:1.1.0:add-dependency -DgroupId=com.example -DartifactId=my-library -Dversion=1.0.0 -Dscope=provided
 ```
 
 The output just shows the library information: 
@@ -51,7 +51,7 @@ The output just shows the library information:
 [INFO] Building add-a-dependecy 1.0-SNAPSHOT
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
-[INFO] --- pomutils-maven-plugin:1.0.0:add-dependency (default-cli) @ add-dependency ---
+[INFO] --- pomutils-maven-plugin:1.1.0:add-dependency (default-cli) @ add-dependency ---
 [INFO] Adding the dependency com.example:my-library
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
@@ -80,7 +80,7 @@ And the resulting file:
 
 ### Deleting a dependency
 
-This goal removes a `dependency` entry from the POM. The parameter are: 
+This goal removes a `dependency` entry from the POM. The parameters are: 
 
 - `groupId`
 - `artifactId`
@@ -89,7 +89,7 @@ This goal removes a `dependency` entry from the POM. The parameter are:
 For example:
 
 ```bash
-$ mvn info.bluespot:pomutils-maven-plugin:1.0.0:delete-dependency -DgroupId=com.example -DartifactId=my-library
+$ mvn info.bluespot:pomutils-maven-plugin:1.1.0:delete-dependency -DgroupId=com.example -DartifactId=my-library
 ```
 
 The output is:
@@ -101,7 +101,7 @@ The output is:
 [INFO] Building add-a-dependecy 1.0-SNAPSHOT
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
-[INFO] --- pomutils-maven-plugin:1.0.0:delete-dependency (default-cli) @ delete-dependecy ---
+[INFO] --- pomutils-maven-plugin:1.1.0:delete-dependency (default-cli) @ delete-dependecy ---
 [INFO] Removing dependency: 'com.example:my-library'
 [INFO] Dependency found (removed).
 [INFO] ------------------------------------------------------------------------
@@ -126,7 +126,7 @@ Properties are replaced if they previously exists.
 For example:
 
 ```bash
-$ mvn info.bluespot:pomutils-maven-plugin:1.0.0:add-properties -Dproperties=server.hostname=abc.example.com,server.port=8080,server.name="My server",server.env=dev
+$ mvn info.bluespot:pomutils-maven-plugin:1.1.0:add-properties -Dproperties=server.hostname=abc.example.com,server.port=8080,server.name="My server",server.env=dev
 ```
 
 Show this output:
@@ -138,7 +138,7 @@ Show this output:
 [INFO] Building add-a-dependecy 1.0-SNAPSHOT
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
-[INFO] --- pomutils-maven-plugin:1.0.0:add-properties (default-cli) @ add-properties ---
+[INFO] --- pomutils-maven-plugin:1.1.0:add-properties (default-cli) @ add-properties ---
 [INFO] Adding general properties to the model.
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
@@ -167,7 +167,7 @@ And the resulting POM:
 You can change a value by selecting an existing property:
 
 ```bash
-$ mvn info.bluespot:pomutils-maven-plugin:1.0.0:add-properties -Dproperties=server.env=PRODUCTION
+$ mvn info.bluespot:pomutils-maven-plugin:1.1.0:add-properties -Dproperties=server.env=PRODUCTION
 ```
 
 ```bash
@@ -203,7 +203,7 @@ broke multi-module projects if a parent POM's GAV is modified.
 Use example:
 
 ```bash
-$ mvn info.bluespot:pomutils-maven-plugin:1.0.0:modify-project -Ddescription="Build 20191002-001" -Dname="My Project"
+$ mvn info.bluespot:pomutils-maven-plugin:1.1.0:modify-project -Ddescription="Build 20191002-001" -Dname="My Project"
 ```
 
 ```bash
@@ -213,7 +213,7 @@ $ mvn info.bluespot:pomutils-maven-plugin:1.0.0:modify-project -Ddescription="Bu
 [INFO] Building add-a-dependecy 1.0-SNAPSHOT
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO] 
-[INFO] --- pomutils-maven-plugin:1.0.0:modify-project (default-cli) @ modify-project ---
+[INFO] --- pomutils-maven-plugin:1.1.0:modify-project (default-cli) @ modify-project ---
 [INFO] Setting the name to 'My Project'
 [INFO] Setting the description to 'Build 20191002-001'
 [INFO] ------------------------------------------------------------------------
@@ -234,6 +234,56 @@ The POM file will result:
   <version>1.0-SNAPSHOT</version>
   <name>My Project</name>
   <description>Build 20191002-001</description>
+...
+</project>
+```
+
+### Add a parent reference
+
+The goal `add-parent` allows developers to add a parent reference to a project. The parameters are:
+
+- `groupId`
+- `artifactId`
+- `version`
+- `relativePath` (optional)
+
+This goal adds a parent reference:
+
+```bash
+$ mvn info.bluespot:pomutils-maven-plugin:1.1.0:add-parent -DgroupId=it.tests -DartifactId=add-a-parent -Dversion=1.0-SNAPSHOT -DrelativePath=../ -DpomFile=child/pom.xml
+```
+
+```bash
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< it.tests:add-a-parent >------------------------
+[INFO] Building add-a-parent 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- pomutils-maven-plugin:1.1.0:add-parent (default-cli) @ add-a-parent ---
+[INFO] Adding the parent reference to child it.tests:add-a-parent
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.270 s
+[INFO] Finished at: 2020-05-04T21:23:53+02:00
+[INFO] ------------------------------------------------------------------------
+```
+
+The POM file will result:
+
+```xml
+<project>
+...
+  <parent>
+    <groupId>it.tests</groupId>
+    <artifactId>add-a-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <relativePath>../</relativePath>
+  </parent>
+  <groupId>it.tests</groupId>
+  <artifactId>receive-a-parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
 ...
 </project>
 ```
