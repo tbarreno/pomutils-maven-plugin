@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>it.tests</groupId>
+    <artifactId>add-a-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <description>Adds a reference to parent to the child POM</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>@project.groupId@</groupId>
+                <artifactId>@project.artifactId@</artifactId>
+                <version>@project.version@</version>
+                <executions>
+                    <execution>
+                        <id>add-a-parent</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>add-parent</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>it.tests</groupId>
+                            <artifactId>add-a-parent</artifactId>
+                            <version>1.0-SNAPSHOT</version>
+                            <relativePath>../</relativePath>
+                            <pomFile>child/pom.xml</pomFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
