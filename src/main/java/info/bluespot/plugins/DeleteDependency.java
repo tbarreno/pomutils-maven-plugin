@@ -19,11 +19,8 @@ package info.bluespot.plugins;
  * under the License.
  */
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Vector;
-
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -32,195 +29,119 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static info.bluespot.plugins.utils.ArtifactUtils.matches;
+
 /**
  * Removes a dependency from the POM.
- * <p>
- * This goal looks for a matching dependency and removes it from the POM file.
- * </p>
- * 
+ *
+ * <p>This goal looks for a matching dependency and removes it from the POM file.
+ *
  * @since 1.0.0
  */
-@Mojo( name = "delete-dependency", requiresProject = true, inheritByDefault = false )
-public class DeleteDependency
-    extends AbstractMojo
-{
-    // PARAMETERS ............................................................
+@Mojo(name = "delete-dependency", requiresProject = true, inheritByDefault = false)
+public class DeleteDependency extends AbstractMojo {
+  // PARAMETERS ............................................................
 
-    /**
-     * Dependency <code>ArtifactId</code>.
-     */
-    @Parameter( property = "artifactId", required = false, readonly = true )
-    private String artifactId;
+  /** Dependency <code>ArtifactId</code>. */
+  @Parameter(property = "artifactId", required = false, readonly = true)
+  private String artifactId;
 
-    /**
-     * Dependency <code>GroupId</code>.
-     */
-    @Parameter( property = "groupId", required = true, readonly = true )
-    private String groupId;
+  /** Dependency <code>GroupId</code>. */
+  @Parameter(property = "groupId", required = true, readonly = true)
+  private String groupId;
 
-    /**
-     * Dependency version.
-     */
-    @Parameter( property = "version", required = false, readonly = true )
-    private String version;
+  /** Dependency version. */
+  @Parameter(property = "version", required = false, readonly = true)
+  private String version;
 
-    /**
-     * Keeps a copy of the current POM file before modifying it.
-     */
-    @Parameter( property = "pomBackup", required = false, readonly = true )
-    private String pomBackup;
+  /** Keeps a copy of the current POM file before modifying it. */
+  @Parameter(property = "pomBackup", required = false, readonly = true)
+  private String pomBackup;
 
-    /**
-     * Specifies a POM file to modify.
-     */
-    @Parameter( property = "pomFile", required = false, readonly = true, defaultValue = "pom.xml" )
-    private String pomFile;
+  /** Specifies a POM file to modify. */
+  @Parameter(property = "pomFile", required = false, readonly = true, defaultValue = "pom.xml")
+  private String pomFile;
 
-    // METHODS ...............................................................
+  /** Dependency <code>ModifyDependencyManagement</code>. */
+  @Parameter(property = "modifyDependencyManagement", required = false)
+  private Boolean modifyDependencyManagement;
 
-    /**
-     * Main goal method.
-     */
-    @Override
-    public void execute()
-        throws MojoExecutionException, MojoFailureException
-    {
-        // Just check if all the GAV is null
-        if ( artifactId == null && groupId == null && version == null )
-        {
-            throw new MojoExecutionException( "An ArtifactId, GroupId or Version parameter is needed for dependency deletion." );
-        }
+  // METHODS ...............................................................
 
-        getLog().info( "Removing dependency: '" + groupId + ":" + artifactId + "'" );
-
-        // Loads the model
-        Model model;
-        try
-        {
-            model = POMUtils.loadModel( pomFile );
-        }
-        catch ( IOException | XmlPullParserException e )
-        {
-            // Exception loading the model
-            throw new MojoExecutionException( "Error while loading the Maven project model:", e );
-        }
-
-        // Gets the dependency list and iterate over it
-        List<Dependency> dependencyList = model.getDependencies();
-        Vector<Dependency> newDependencyList = new Vector<Dependency>();
-
-        for ( Dependency dependency : dependencyList )
-        {
-            // It a matching dependency is found, just skip it; if not, the dependency
-            // is added to the new list.
-            if ( matches( dependency ) )
-            {
-                getLog().info( "Dependency found (removed)." );
-            }
-            else
-            {
-                newDependencyList.add( dependency );
-            }
-        }
-
-        // Set the new (filtered) dependency list
-        model.setDependencies( newDependencyList );
-
-        // Save the model
-        try
-        {
-            POMUtils.saveModel( model, pomFile, pomBackup );
-        }
-        catch ( IOException e )
-        {
-            // Exception
-            throw new MojoExecutionException( "Error while writing the POM file:", e );
-        }
+  /** Main goal method. */
+  @Override
+  public void execute() throws MojoExecutionException, MojoFailureException {
+    // Just check if all the GAV is null
+    if (artifactId == null && groupId == null && version == null) {
+      throw new MojoExecutionException(
+          "An ArtifactId, GroupId or Version parameter is needed for dependency deletion.");
     }
 
-    /**
-     * Auxiliary method for match a dependency with 'whatever' has been provided (the <code>groupId</code>, the
-     * </code>artifactId</code>, both of them, all the GAV coordinates, etc.).
-     * 
-     * @param dependency A dependency object from the POM.
-     * @return 'true' if there's any match.
-     */
-    private boolean matches( Dependency dependency )
-    {
-        // Look for all the matches
-        return ( matchesGroupId( dependency ) && matchesArtifactId( dependency ) && matchesVersion( dependency ) );
+    getLog().info("Removing dependency: '" + groupId + ":" + artifactId + "'");
+
+    // Loads the model
+    Model model;
+    try {
+      model = POMUtils.loadModel(pomFile);
+    } catch (IOException | XmlPullParserException e) {
+      // Exception loading the model
+      throw new MojoExecutionException("Error while loading the Maven project model:", e);
     }
 
-    /**
-     * Auxiliary method for check a <code>GroupId</code> match.
-     * 
-     * @param dependency A dependency object from the POM.
-     * @return 'true' if the <code>GroupId</code> matches.
-     */
-    private boolean matchesGroupId( Dependency dependency )
-    {
-        // If the GroupId is not provided, it's OK (the match could be over the ArtifactId or the version)
-        if ( groupId == null )
-        {
-            return ( true );
-        }
+    model = deleteDependency(model, groupId, artifactId, version, modifyDependencyManagement);
 
-        if ( groupId.equals( dependency.getGroupId() ) )
-        {
-            return ( true );
+    // Save the model
+    try {
+      POMUtils.saveModel(model, pomFile, pomBackup);
+    } catch (IOException e) {
+      // Exception
+      throw new MojoExecutionException("Error while writing the POM file:", e);
+    }
+  }
+
+  private Model deleteDependency(
+      Model model,
+      String groupId,
+      String artifactId,
+      String version,
+      Boolean modifyDependencyManagement) {
+    if (modifyDependencyManagement != null && model.getDependencyManagement() != null) {
+
+      DependencyManagement dependencyManagement = model.getDependencyManagement();
+      List<Dependency> newDependencyManagementDependencyList = new ArrayList<>();
+
+      for (Dependency dependency : dependencyManagement.getDependencies()) {
+        // If a matching dependency is found, just skip it; if not, the dependency is added to the
+        // new list.
+        if (matches(dependency, groupId, artifactId, version)) {
+          getLog().info("Dependency found in dependency management (removed).");
+        } else {
+          newDependencyManagementDependencyList.add(dependency);
         }
-        else
-        {
-            return ( false );
-        }
+      }
+      dependencyManagement.setDependencies(newDependencyManagementDependencyList);
+      model.setDependencyManagement(dependencyManagement);
     }
 
-    /**
-     * Auxiliary method for check a <code>ArtifactId</code> match.
-     * 
-     * @param dependency A dependency object from the POM.
-     * @return 'true' if the <code>ArtifactId</code> matches.
-     */
-    private boolean matchesArtifactId( Dependency dependency )
-    {
-        // If the ArtifactId is not provided, it's OK (the match could be over the GroupId or the version)
-        if ( artifactId == null )
-        {
-            return ( true );
-        }
+    // Gets the dependency list and iterate over it
+    List<Dependency> newDependencyList = new ArrayList<>();
 
-        if ( artifactId.equals( dependency.getArtifactId() ) )
-        {
-            return ( true );
-        }
-        else
-        {
-            return ( false );
-        }
+    for (Dependency dependency : model.getDependencies()) {
+      // If a matching dependency is found, just skip it; if not, the dependency
+      // is added to the new list.
+      if (matches(dependency, groupId, artifactId, version)) {
+        getLog().info("Dependency found (removed).");
+      } else {
+        newDependencyList.add(dependency);
+      }
     }
 
-    /**
-     * Auxiliary method for check a <code>Version</code> match.
-     * 
-     * @param dependency A dependency object from the POM.
-     * @return 'true' if the <code>Version</code> matches.
-     */
-    private boolean matchesVersion( Dependency dependency )
-    {
-        // If the Version is not provided, it's OK
-        if ( version == null )
-        {
-            return ( true );
-        }
-
-        if ( version.equals( dependency.getVersion() ) )
-        {
-            return ( true );
-        }
-        else
-        {
-            return ( false );
-        }
-    }
-
+    // Set the new (filtered) dependency list
+    model.setDependencies(newDependencyList);
+    return model;
+  }
 }
