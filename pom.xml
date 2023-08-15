@@ -43,7 +43,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <versions.maven>3.3.9</versions.maven>
+    <versions.maven>3.8.1</versions.maven>
     <versions.maven-plugin-plugin>3.6.0</versions.maven-plugin-plugin>
   </properties>
 
